@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
+import { AuthService } from '../../../services/auth.service';
+import { Router } from '@angular/router';
+import { ProductsService } from '../../../services/products.service';
 
 @Component({
     standalone: true,
@@ -92,6 +95,17 @@ import { MenuModule } from 'primeng/menu';
     </div>`
 })
 export class BestSellingWidget {
+    private productsService = inject(ProductsService);
+
+    constructor(public router: Router) {
+        this.getList();
+    }
+
+    getList(){
+        this.productsService.list().subscribe(products => {
+            console.log('list :', products);
+        })
+    }
     menu = null;
 
     items = [
