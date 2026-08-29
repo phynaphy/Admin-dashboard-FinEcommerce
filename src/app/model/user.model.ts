@@ -15,3 +15,14 @@ export interface UserResponse {
   profileImage: string | null;
   createdAt: string;
 }
+
+
+
+export interface User {
+    id: number;
+    username: string;
+    email: string;
+    fullName: string;
+    role: 'ADMIN' | 'USER';
+    profilePictureUrl: string | null;
+}

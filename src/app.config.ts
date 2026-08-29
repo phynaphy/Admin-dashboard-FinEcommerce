@@ -7,7 +7,7 @@ import { providePrimeNG } from 'primeng/config';
 
 import { appRoutes } from './app.routes';
 import { AuthService } from './app/services/auth.service';
-import { jwtInterceptor } from './app/layout/component/jwt.interceptor';
+import { jwtInterceptor } from './app/layout/core/jwt.interceptor';
 
 export function initAuth(authService: AuthService) {
     return () => authService.initializeSession();

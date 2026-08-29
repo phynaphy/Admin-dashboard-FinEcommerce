@@ -1,0 +1,205 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="min-h-screen">
+    <div class="mx-auto space-y-6">
+
+        <!-- Header Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-xl shadow-sm border border-slate-200 bg-white">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">User Management</h1>
+                <p class="text-sm text-slate-500 mt-1">View and manage registered accounts</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <p-button
+                    label="Refresh"
+                    icon="pi pi-refresh"
+                    severity="secondary"
+                    [outlined]="true"
+                    [loading]="isLoading()"
+                    (onClick)="loadUsers()">
+                </p-button>
+                <p-button
+                    label="Add User"
+                    icon="pi pi-plus"
+                    severity="primary"
+                    (onClick)="openCreateModal()">
+                </p-button>
+            </div>
+        </div>
+
+        <!-- User Data Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden p-4">
+            <p-table
+                #dt
+                [value]="users()"
+                [loading]="isLoading()"
+                [paginator]="true"
+                [rows]="10"
+                [rowsPerPageOptions]="[5, 10, 25]"
+                [globalFilterFields]="['username', 'email', 'fullName', 'role']"
+                styleClass="p-datatable-striped"
+                [tableStyle]="{ 'min-width': '50rem' }">
+
+                <ng-template pTemplate="caption">
+                    <div class="flex items-center justify-between pb-2">
+                        <span class="text-lg font-semibold text-slate-700">All Users</span>
+                        <p-iconfield iconPosition="left">
+                            <p-inputicon styleClass="pi pi-search"></p-inputicon>
+                            <input
+                                pInputText
+                                type="text"
+                                (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                                placeholder="Search users..."
+                                class="p-inputtext-sm w-64 rounded-lg" />
+                        </p-iconfield>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="id" class="w-16">ID <p-sortIcon field="id"></p-sortIcon></th>
+                        <th class="w-16">Profile</th>
+                        <th pSortableColumn="username">Username <p-sortIcon field="username"></p-sortIcon></th>
+                        <th pSortableColumn="fullName">Full Name <p-sortIcon field="fullName"></p-sortIcon></th>
+                        <th pSortableColumn="email">Email <p-sortIcon field="email"></p-sortIcon></th>
+                        <th pSortableColumn="role">Role <p-sortIcon field="role"></p-sortIcon></th>
+                        <th class="w-28 text-center">Actions</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-user>
+                    <tr>
+                        <td class="font-medium text-slate-500">#{{ user.id }}</td>
+                        <td>
+                            @if (user.profilePictureUrl) {
+                                <p-avatar
+                                    [image]="getAvatarUrl(user.profilePictureUrl)!"
+                                    shape="circle"
+                                    size="normal">
+                                </p-avatar>
+                            } @else {
+                                <p-avatar
+                                    [label]="getInitials(user.fullName, user.username)"
+                                    shape="circle"
+                                    styleClass="bg-indigo-100 text-indigo-700 font-bold">
+                                </p-avatar>
+                            }
+                        </td>
+                        <td class="font-semibold text-slate-800">{{ user.username }}</td>
+                        <td class="text-slate-600">
+                            {{ user.fullName && user.fullName.trim() !== '' ? user.fullName : 'N/A' }}
+                        </td>
+                        <td class="text-slate-600">{{ user.email }}</td>
+                        <td>
+                            <p-tag
+                                [value]="user.role"
+                                [severity]="user.role === 'ADMIN' ? 'danger' : 'info'">
+                            </p-tag>
+                        </td>
+                        <td class="text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <p-button
+                                    icon="pi pi-pencil"
+                                    [rounded]="true"
+                                    [text]="true"
+                                    severity="secondary"
+                                    (onClick)="openEditModal(user)">
+                                </p-button>
+                                <p-button
+                                    icon="pi pi-trash"
+                                    [rounded]="true"
+                                    [text]="true"
+                                    severity="danger"
+                                    (onClick)="deleteUser(user)">
+                                </p-button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="7" class="text-center py-8 text-slate-400">
+                            No registered users found.
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
+
+<!-- Create / Edit User Dialog -->
+<p-dialog
+    [(visible)]="userDialog"
+    [style]="{ width: '450px' }"
+    [header]="isEditMode() ? 'Edit User' : 'Create New User'"
+    [modal]="true"
+    styleClass="p-fluid">
+
+    <ng-template pTemplate="content">
+        <form [formGroup]="userForm" class="flex flex-col gap-4 mt-2">
+
+            <div class="flex flex-col gap-1">
+                <label for="fullName" class="font-semibold text-slate-700 text-sm">Full Name</label>
+                <input pInputText id="fullName" formControlName="fullName" placeholder="Enter full name" />
+            </div>
+
+            @if (!isEditMode()) {
+                <div class="flex flex-col gap-1">
+                    <label for="username" class="font-semibold text-slate-700 text-sm">Username</label>
+                    <input pInputText id="username" formControlName="username" placeholder="Enter username" />
+                </div>
+            }
+
+            <div class="flex flex-col gap-1">
+                <label for="email" class="font-semibold text-slate-700 text-sm">Email</label>
+                <input pInputText id="email" formControlName="email" type="email" placeholder="Enter email" />
+            </div>
+
+            @if (!isEditMode()) {
+                <div class="flex flex-col gap-1">
+                    <label for="password" class="font-semibold text-slate-700 text-sm">Password</label>
+                    <input pInputText id="password" formControlName="password" type="password" placeholder="Enter password" />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label for="confirmPassword" class="font-semibold text-slate-700 text-sm">Confirm Password</label>
+                    <input pInputText id="confirmPassword" formControlName="confirmPassword" type="password" placeholder="Re-enter password" />
+                </div>
+            }
+
+            <div class="flex flex-col gap-1">
+                <label for="role" class="font-semibold text-slate-700 text-sm">Role</label>
+                <p-dropdown
+                    id="role"
+                    [options]="roleOptions"
+                    formControlName="role"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Select Role"
+                    appendTo="body"
+                    styleClass="w-full">
+                </p-dropdown>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <p-button
+            label="Cancel"
+            icon="pi pi-times"
+            [text]="true"
+            severity="secondary"
+            (onClick)="userDialog.set(false)">
+        </p-button>
+        <p-button
+            [label]="isEditMode() ? 'Update' : 'Create'"
+            icon="pi pi-check"
+            [loading]="isSubmitting()"
+            (onClick)="saveUser()">
+        </p-button>
+    </ng-template>
+</p-dialog>

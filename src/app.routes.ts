@@ -40,6 +40,10 @@ export const appRoutes: Routes = [
             {
                 path: 'products',
                 loadComponent: () => import('./app/pages/product-list/product-list.component').then(m => m.ProductListComponent)
+            },
+            {
+                path: 'users',
+                loadComponent: () => import('./app/pages/user-list/user-list.component').then(m => m.UserListComponent)
             }
         ]
     },

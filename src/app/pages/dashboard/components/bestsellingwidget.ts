@@ -98,14 +98,9 @@ export class BestSellingWidget {
     private productsService = inject(ProductsService);
 
     constructor(public router: Router) {
-        this.getList();
     }
 
-    getList(){
-        this.productsService.list().subscribe(products => {
-            console.log('list :', products);
-        })
-    }
+
     menu = null;
 
     items = [
