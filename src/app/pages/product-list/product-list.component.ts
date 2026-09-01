@@ -2,7 +2,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-// PrimeNG Imports
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -13,10 +12,12 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { TooltipModule } from 'primeng/tooltip';
+import { DropdownModule } from 'primeng/dropdown';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
 import { AuthService } from '../../services/auth.service';
 import { Product } from '../../model/product.model';
+import { CategoryResponse } from '../../model/category.model';
 import { ProductsService } from '../../services/products.service';
 import { environment } from '../../../environments/environment';
 
@@ -35,7 +36,8 @@ import { environment } from '../../../environments/environment';
         ToastModule,
         ConfirmDialogModule,
         DialogModule,
-        TooltipModule
+        TooltipModule,
+        DropdownModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './product-list.component.html'
@@ -49,6 +51,7 @@ export class ProductListComponent implements OnInit {
     readonly backendHost = environment.backendHost || 'http://localhost:8080';
 
     products = signal<Product[]>([]);
+    categories = signal<CategoryResponse[]>([]);
     isLoading = signal<boolean>(true);
 
     productDialog = false;
@@ -59,6 +62,7 @@ export class ProductListComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadProducts();
+        this.getCategory();
     }
 
     getImageUrl(url: string | undefined): string {
@@ -88,6 +92,17 @@ export class ProductListComponent implements OnInit {
         });
     }
 
+    getCategory(): void {
+        this.productService.getAllCategories().subscribe({
+            next: (data: CategoryResponse[]) => {
+                this.categories.set(data); // Store categories list
+            },
+            error: (err) => {
+                console.error('Error fetching categories:', err);
+            }
+        });
+    }
+
     openNew(): void {
         this.product = {};
         this.selectedFile = null;
@@ -96,9 +111,14 @@ export class ProductListComponent implements OnInit {
     }
 
     editProduct(product: Product): void {
+        const extractedCategoryId = product.categoryId ?? (product as any).category?.id ?? null;
+
+        this.product = {
+            ...product,
+            categoryId: extractedCategoryId
+        };
         this.product = { ...product };
         this.selectedFile = null;
-        // Show existing image as preview if available
         this.imagePreview = product.imageUrl ? this.getImageUrl(product.imageUrl) : null;
         this.productDialog = true;
     }
@@ -127,7 +147,7 @@ export class ProductListComponent implements OnInit {
             this.messageService.add({
                 severity: 'warn',
                 summary: 'Warning',
-                detail: 'Please fill in required fields (Name, Price, Category ID)'
+                detail: 'Please fill in required fields (Name, Price, Category)'
             });
             return;
         }
@@ -141,12 +161,6 @@ export class ProductListComponent implements OnInit {
             formData.append('description', this.product.description);
         }
 
-        // FIX 1: Send 'stock' instead of 'stockQuantity' to match Spring DTO
-        // if (this.product.stock !== undefined && this.product.stock !== null) {
-        //     formData.append('stock', this.product.stock.toString());
-        // }
-
-        // FIX 2: Attach selected file using 'image' key matching Spring MultipartFile field
         if (this.selectedFile) {
             formData.append('imageUrl', this.selectedFile);
         }
@@ -203,8 +217,8 @@ export class ProductListComponent implements OnInit {
     }
 
     getSeverity(quantity: number | null | undefined): 'success' | 'warn' | 'danger' {
-        if (!quantity || quantity <= 0) return 'danger';
+        if (!quantity || quantity <= 0) return 'success';
         if (quantity > 20) return 'success';
-        return 'warn';
+        return 'success';
     }
 }

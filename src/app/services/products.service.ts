@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Product } from '../model/product.model';
 import { Observable } from 'rxjs';
+import { CategoryResponse } from '../model/category.model';
 
 @Injectable({
     providedIn: 'root',
@@ -33,5 +34,9 @@ export class ProductsService {
 
     deleteProduct(id: number): Observable<void> {
         return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    }
+
+    getAllCategories(): Observable<CategoryResponse[]> {
+        return this.http.get<CategoryResponse[]>(`http://localhost:8080/api/v1/web/categories`);
     }
 }

@@ -44,6 +44,10 @@ export const appRoutes: Routes = [
             {
                 path: 'users',
                 loadComponent: () => import('./app/pages/user-list/user-list.component').then(m => m.UserListComponent)
+            },
+            {
+                path: 'categories',
+                loadComponent: () => import('./app/pages/category-list/category-list.component').then(m => m.CategoryComponent)
             }
         ]
     },

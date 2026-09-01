@@ -21,11 +21,12 @@ export class AppMenu {
     ngOnInit() {
         this.model = [
             {
-                label: 'Home',
+                // label: 'Home',
                 items: [
                     { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/dashboard'] },
                     { label: 'User', icon: 'pi pi-fw pi-user', routerLink: ['/users'] },
-                    { label: 'Product', icon: 'pi pi-fw pi-box', routerLink: ['/products'] } // Fixed: pi-product changed to pi-box
+                    { label: 'Product', icon: 'pi pi-fw pi-box', routerLink: ['/products'] },
+                    { label: 'Category', icon: 'pi pi-fw pi-th-large', routerLink: ['/categories'] }
                 ]
             },
             // {

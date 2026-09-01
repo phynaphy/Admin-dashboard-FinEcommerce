@@ -14,7 +14,7 @@ export class AuthService {
     currentUser = signal<UserProfile | null>(null);
 
     login(credentials: any): Observable<any> {
-        const url = `${this.baseUrl}/users/login`;
+        const url = `${this.baseUrl}/admin/users/login`;
 
         // Construct Basic Auth header required by Spring Security @PreAuthorize on /login
         const basicAuthCredentials = btoa(`${credentials.username}:${credentials.password}`);
