@@ -1,5 +1,7 @@
-import { Injectable, effect, signal, computed } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Injectable, effect, signal, computed, inject } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 export interface layoutConfig {
     preset?: string;
@@ -61,6 +63,9 @@ export class LayoutService {
     configUpdate$ = this.configUpdate.asObservable();
 
     overlayOpen$ = this.overlayOpen.asObservable();
+    private http = inject(HttpClient);
+    readonly baseUrl = environment.baseUrl;
+
 
     theme = computed(() => (this.layoutConfig()?.darkTheme ? 'light' : 'dark'));
 
@@ -174,5 +179,9 @@ export class LayoutService {
 
     reset() {
         this.resetSource.next(true);
+    }
+
+    logout(): Observable<any>{
+        return this.http.post(`${this.baseUrl}/admin/auth/logout`, {});
     }
 }
