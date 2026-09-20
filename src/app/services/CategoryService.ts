@@ -21,12 +21,12 @@ export class CategoryService {
         return this.http.get<CategoryResponse>(`${this.apiUrl}/${id}`);
     }
 
-    createCategory(request: CategoryRequest): Observable<CategoryResponse> {
-        return this.http.post<CategoryResponse>(this.apiUrl, request);
+    createCategory(formData: FormData): Observable<CategoryResponse> {
+        return this.http.post<CategoryResponse>(this.apiUrl, formData);
     }
 
-    updateCategory(id: number, request: CategoryRequest): Observable<CategoryResponse> {
-        return this.http.put<CategoryResponse>(`${this.apiUrl}/${id}`, request);
+    updateCategory(id: number,formData: FormData): Observable<CategoryResponse> {
+        return this.http.put<CategoryResponse>(`${this.apiUrl}/${id}`, formData);
     }
 
     deleteCategory(id: number): Observable<void> {

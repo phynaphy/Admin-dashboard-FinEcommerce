@@ -6,7 +6,8 @@
     <div class="mx-auto space-y-6">
 
         <!-- Top Action Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <div>
                 <h1 class="text-2xl font-bold text-slate-800">Category Management</h1>
                 <p class="text-sm text-slate-500 mt-1">Organize and structure store product categories</p>
@@ -31,11 +32,11 @@
                 [paginator]="true"
                 [rows]="10"
                 [rowsPerPageOptions]="[5, 10, 25]"
-                [globalFilterFields]="['name']"
+                [globalFilterFields]="['id', 'name', 'code']"
                 styleClass="p-datatable-striped"
-                [tableStyle]="{ 'min-width': '35rem' }">
+                [tableStyle]="{ 'min-width': '50rem' }">
 
-                <!-- Table Header Caption (Global Search) -->
+                <!-- Table Header Caption -->
                 <ng-template pTemplate="caption">
                     <div class="flex items-center justify-between pb-2">
                         <span class="text-lg font-semibold text-slate-700">Categories</span>
@@ -51,14 +52,26 @@
                     </div>
                 </ng-template>
 
-                <!-- Table Column Headers -->
+                <!-- Table Headers -->
                 <ng-template pTemplate="header">
                     <tr>
-                        <th pSortableColumn="id" class="w-24">
-                            ID <p-sortIcon field="id"></p-sortIcon>
+                        <th class="w-12 text-center">No</th>
+                        <th pSortableColumn="id" class="w-20">
+                            ID
+                            <p-sortIcon field="id"></p-sortIcon>
                         </th>
+                        <th class="w-20 text-center">Image</th>
                         <th pSortableColumn="name">
-                            Category Name <p-sortIcon field="name"></p-sortIcon>
+                            Category Name
+                            <p-sortIcon field="name"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="code" class="w-36">
+                            Code
+                            <p-sortIcon field="code"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="totalProducts" class="w-36 text-center">
+                            Total Products
+                            <p-sortIcon field="totalProducts"></p-sortIcon>
                         </th>
                         @if (authService.currentUser()?.role === 'ADMIN') {
                             <th class="text-center w-32">Actions</th>
@@ -66,12 +79,40 @@
                     </tr>
                 </ng-template>
 
-                <!-- Table Rows Body -->
-                <ng-template pTemplate="body" let-cat>
+                <!-- Table Rows -->
+                <ng-template pTemplate="body" let-cat let-i="rowIndex">
                     <tr>
+                        <td class="text-center">{{ i + 1 }}</td>
                         <td class="font-medium text-slate-600">#{{ cat.id }}</td>
+                        <td class="text-center">
+                            @if (cat.imageUrl) {
+                                <img [src]="getImageUrl(cat.imageUrl)" [alt]="cat.name"
+                                     class="w-10 h-10 object-cover rounded-lg border border-slate-200 inline-block" />
+                            } @else {
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 inline-flex items-center justify-center text-slate-400">
+                                    <i class="pi pi-image text-lg"></i>
+                                </div>
+                            }
+                        </td>
                         <td>
                             <div class="font-semibold text-slate-800">{{ cat.name }}</div>
+                        </td>
+                        <td>
+                            @if (cat.code) {
+                                <span
+                                    class="font-mono text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded border border-slate-200">
+                                    {{ cat.code }}
+                                </span>
+                            } @else {
+                                <span class="text-xs text-slate-400">—</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                {{ cat.totalProducts ?? 0 }}
+                            </span>
                         </td>
                         @if (authService.currentUser()?.role === 'ADMIN') {
                             <td class="text-center">
@@ -100,10 +141,10 @@
                     </tr>
                 </ng-template>
 
-                <!-- Empty State -->
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td [attr.colspan]="authService.currentUser()?.role === 'ADMIN' ? 3 : 2" class="text-center py-8 text-slate-400">
+                        <td [attr.colspan]="authService.currentUser()?.role === 'ADMIN' ? 6 : 5"
+                            class="text-center py-8 text-slate-400">
                             No categories found.
                         </td>
                     </tr>
@@ -113,10 +154,10 @@
     </div>
 </div>
 
-<!-- Add / Edit Category Modal Dialog -->
+<!-- Modal Dialog -->
 <p-dialog
     [(visible)]="categoryDialog"
-    [style]="{ width: '420px' }"
+    [style]="{ width: '450px' }"
     [header]="category.id ? 'Edit Category' : 'Add New Category'"
     [modal]="true"
     styleClass="p-fluid"
@@ -124,6 +165,8 @@
 
     <ng-template pTemplate="content">
         <div class="space-y-4 pt-2">
+
+            <!-- Category Name Input -->
             <div>
                 <label for="name" class="block font-medium text-sm text-slate-700 mb-1">
                     Category Name <span class="text-red-500">*</span>
@@ -133,13 +176,12 @@
                     pInputText
                     id="name"
                     [(ngModel)]="category.name"
-                    placeholder="Enter category name"
+                    placeholder="e.g. Electronics"
                     [class.ng-invalid]="nameSubmitted && (!category.name || category.name.trim().length < 3)"
                     [class.ng-dirty]="nameSubmitted"
                     required
                     autofocus style="width: 100%;" />
 
-                <!-- Validation Alerts -->
                 <small
                     *ngIf="nameSubmitted && !category.name?.trim()"
                     class="p-error block mt-1 text-xs text-red-500">
@@ -151,6 +193,55 @@
                     Category name must be at least 3 characters.
                 </small>
             </div>
+
+            <!-- Image Upload Field (Key: imageUrl) -->
+            <div>
+                <label class="block font-medium text-sm text-slate-700 mb-1">Category Image</label>
+                <div
+                    class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                    @if (imagePreview) {
+                        <div class="relative inline-block">
+                            <img [src]="imagePreview" alt="Category Preview"
+                                 class="w-24 h-24 object-cover rounded-lg border border-slate-200 shadow-sm" />
+                            <button
+                                type="button"
+                                (click)="removeSelectedImage()"
+                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-md hover:bg-red-600">
+                                <i class="pi pi-times"></i>
+                            </button>
+                        </div>
+                    } @else {
+                        <input
+                            type="file"
+                            id="fileInput"
+                            (change)="onFileSelected($event)"
+                            accept="image/*"
+                            class="hidden" />
+                        <label for="fileInput"
+                               class="cursor-pointer flex flex-col items-center justify-center space-y-2">
+                            <i class="pi pi-upload text-3xl text-slate-400"></i>
+                            <span class="text-sm font-medium text-slate-600">Click to choose image</span>
+                            <span class="text-xs text-slate-400">PNG, JPG, or WEBP</span>
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <!-- Associated Products Count (Edit View Only) -->
+            @if (category.id !== undefined) {
+                <div>
+                    <label class="block font-medium text-sm text-slate-700 mb-1">
+                        Total Associated Products
+                    </label>
+                    <input
+                        type="number"
+                        pInputText
+                        [value]="category.totalProducts ?? 0"
+                        disabled
+                        class="bg-slate-100 text-slate-500 cursor-not-allowed"
+                        style="width: 100%;" />
+                </div>
+            }
         </div>
     </ng-template>
 

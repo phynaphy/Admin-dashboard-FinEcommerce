@@ -59,6 +59,7 @@
 
                 <ng-template pTemplate="header">
                     <tr>
+                        <td class="w-12 text-center">No</td>
                         <th pSortableColumn="id" class="w-16">ID <p-sortIcon field="id"></p-sortIcon></th>
                         <th class="w-16">Profile</th>
                         <th pSortableColumn="username">Username <p-sortIcon field="username"></p-sortIcon></th>
@@ -69,8 +70,9 @@
                     </tr>
                 </ng-template>
 
-                <ng-template pTemplate="body" let-user>
+                <ng-template pTemplate="body" let-user let-i="rowIndex">
                     <tr>
+                        <td class="text-center">{{ i + 1 }}</td>
                         <td class="font-medium text-slate-500">#{{ user.id }}</td>
                         <td>
                             @if (user.profilePictureUrl) {

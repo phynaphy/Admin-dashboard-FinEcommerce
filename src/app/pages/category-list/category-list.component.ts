@@ -17,6 +17,14 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
+export interface CategoryModel {
+    id?: number;
+    name: string;
+    code?: string;
+    imageUrl?: string;
+    totalProducts?: number;
+}
+
 @Component({
     selector: 'app-category',
     standalone: true,
@@ -42,10 +50,13 @@ export class CategoryComponent implements OnInit {
     isLoading = signal<boolean>(false);
     isSaving = signal<boolean>(false);
 
-    categoryDialog: boolean = false;
-    category: { id?: number; name: string } = { name: '' };
+    backendHost: string = 'http://localhost:8080';
 
-    // Form field tracking for inline error UI
+    categoryDialog: boolean = false;
+    category: CategoryModel = this.getEmptyCategory();
+
+    selectedFile: File | null = null;
+    imagePreview: string | null = null;
     nameSubmitted: boolean = false;
 
     constructor(
@@ -57,6 +68,24 @@ export class CategoryComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadCategories();
+    }
+
+    getImageUrl(url: string | undefined): string {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+            return url;
+        }
+        const cleanPath = url.startsWith('/') ? url : `/${url}`;
+        return `${this.backendHost}${cleanPath}`;
+    }
+
+    private getEmptyCategory(): CategoryModel {
+        return {
+            name: '',
+            code: '',
+            imageUrl: '',
+            totalProducts: 0
+        };
     }
 
     loadCategories(): void {
@@ -74,22 +103,43 @@ export class CategoryComponent implements OnInit {
     }
 
     openNew(): void {
-        this.category = { name: '' };
+        this.category = this.getEmptyCategory();
+        this.selectedFile = null;
+        this.imagePreview = null;
         this.nameSubmitted = false;
         this.categoryDialog = true;
     }
 
     editCategory(cat: CategoryResponse): void {
         this.category = { ...cat };
+        this.selectedFile = null;
+        this.imagePreview = cat.imageUrl ? this.getImageUrl(cat.imageUrl) : null;
         this.nameSubmitted = false;
         this.categoryDialog = true;
+    }
+
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files[0]) {
+            this.selectedFile = input.files[0];
+            const reader = new FileReader();
+            reader.onload = (e: ProgressEvent<FileReader>) => {
+                this.imagePreview = e.target?.result as string;
+            };
+            reader.readAsDataURL(this.selectedFile);
+        }
+    }
+
+    removeSelectedImage(): void {
+        this.selectedFile = null;
+        this.imagePreview = null;
+        this.category.imageUrl = '';
     }
 
     saveCategory(): void {
         this.nameSubmitted = true;
         const trimmedName = this.category.name ? this.category.name.trim() : '';
 
-        // --- 1. Frontend Form Validation ---
         if (!trimmedName) {
             this.messageService.add({
                 severity: 'warn',
@@ -111,46 +161,48 @@ export class CategoryComponent implements OnInit {
         }
 
         this.isSaving.set(true);
-        const payload = { name: trimmedName };
 
-        // --- 2. Create or Update Execution ---
+        // Build Multipart Form Data matching Postman specs
+        const formData = new FormData();
+        formData.append('name', trimmedName);
+
+        if (this.category.code) {
+            formData.append('code', this.category.code.trim());
+        }
+
+        if (this.selectedFile) {
+            formData.append('imageUrl', this.selectedFile);
+        }
+
         if (this.category.id) {
-            this.categoryService.updateCategory(this.category.id, payload).subscribe({
-                next: (updatedCat) => {
-                    this.isSaving.set(false);
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Category Updated',
-                        detail: `Category was updated successfully.`,
-                        life: 3000
-                    });
-                    this.hideDialog();
-                    this.loadCategories();
-                },
+            this.categoryService.updateCategory(this.category.id, formData).subscribe({
+                next: () => this.handleSaveSuccess('Updated'),
                 error: (err: HttpErrorResponse) => {
                     this.isSaving.set(false);
                     this.handleApiError(err, 'Could not update category.');
                 }
             });
         } else {
-            this.categoryService.createCategory(payload).subscribe({
-                next: (createdCat) => {
-                    this.isSaving.set(false);
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Category Created',
-                        detail: `Category "${createdCat.name}" added successfully.`,
-                        life: 3000
-                    });
-                    this.hideDialog();
-                    this.loadCategories();
-                },
+            this.categoryService.createCategory(formData).subscribe({
+                next: (createdCat) => this.handleSaveSuccess('Created', createdCat.name),
                 error: (err: HttpErrorResponse) => {
                     this.isSaving.set(false);
                     this.handleApiError(err, 'Could not create category.');
                 }
             });
         }
+    }
+
+    private handleSaveSuccess(action: string, name?: string): void {
+        this.isSaving.set(false);
+        this.messageService.add({
+            severity: 'success',
+            summary: `Category ${action}`,
+            detail: name ? `Category "${name}" added successfully.` : `Category updated successfully.`,
+            life: 3000
+        });
+        this.hideDialog();
+        this.loadCategories();
     }
 
     deleteCategory(cat: CategoryResponse): void {
@@ -179,7 +231,6 @@ export class CategoryComponent implements OnInit {
         });
     }
 
-    // --- 3. Enhanced Centralized HTTP Error Handler ---
     private handleApiError(error: HttpErrorResponse, fallbackMsg: string): void {
         let summary = 'Error';
         let detail = fallbackMsg;
@@ -211,7 +262,9 @@ export class CategoryComponent implements OnInit {
 
     hideDialog(): void {
         this.categoryDialog = false;
-        this.category = { name: '' };
+        this.category = this.getEmptyCategory();
+        this.selectedFile = null;
+        this.imagePreview = null;
         this.nameSubmitted = false;
     }
 }
