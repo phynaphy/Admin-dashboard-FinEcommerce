@@ -1,42 +1,74 @@
+// import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+// import { ApplicationConfig, APP_INITIALIZER, provideZoneChangeDetection } from '@angular/core';
+// import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+// import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
+// import Aura from '@primeng/themes/aura';
+// import { providePrimeNG } from 'primeng/config';
+//
+// import { appRoutes } from './app.routes';
+// import { AuthService } from './app/services/auth.service';
+// import { jwtInterceptor } from './app/layout/core/jwt.interceptor';
+//
+// export function initAuth(authService: AuthService) {
+//     return () => authService.initializeSession();
+// }
+//
+// export const appConfig: ApplicationConfig = {
+//     providers: [
+//         provideZoneChangeDetection({ eventCoalescing: true }),
+//
+//         // Single Router Provider combining all options
+//         provideRouter(
+//             appRoutes,
+//             withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
+//             withEnabledBlockingInitialNavigation()
+//         ),
+//
+//         // Single HttpClient Provider with interceptor and fetch API support
+//         provideHttpClient(
+//             withFetch(),
+//             withInterceptors([jwtInterceptor]) // <--- THIS ATTACHES YOUR JWT TOKEN
+//         ),
+//
+//         {
+//             provide: APP_INITIALIZER,
+//             useFactory: initAuth,
+//             deps: [AuthService],
+//             multi: true
+//         },
+//
+//         provideAnimationsAsync(),
+//         providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } })
+//     ]
+// };
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, APP_INITIALIZER, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
 import Aura from '@primeng/themes/aura';
 import { providePrimeNG } from 'primeng/config';
 
 import { appRoutes } from './app.routes';
-import { AuthService } from './app/services/auth.service';
-import { jwtInterceptor } from './app/layout/core/jwt.interceptor';
-
-export function initAuth(authService: AuthService) {
-    return () => authService.initializeSession();
-}
+import { authInterceptor } from './app/layout/core/jwt.interceptor'; // Or wherever your interceptor is located
 
 export const appConfig: ApplicationConfig = {
     providers: [
         provideZoneChangeDetection({ eventCoalescing: true }),
 
-        // Single Router Provider combining all options
+        // Router Configuration
         provideRouter(
             appRoutes,
             withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
             withEnabledBlockingInitialNavigation()
         ),
 
-        // Single HttpClient Provider with interceptor and fetch API support
+        // HttpClient with Fetch API & JWT Interceptor
         provideHttpClient(
             withFetch(),
-            withInterceptors([jwtInterceptor]) // <--- THIS ATTACHES YOUR JWT TOKEN
+            withInterceptors([authInterceptor])
         ),
 
-        {
-            provide: APP_INITIALIZER,
-            useFactory: initAuth,
-            deps: [AuthService],
-            multi: true
-        },
-
+        // UI & Animations
         provideAnimationsAsync(),
         providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } })
     ]
