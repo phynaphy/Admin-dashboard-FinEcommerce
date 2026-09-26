@@ -1,7 +1,321 @@
+<!--<p-toast></p-toast>-->
+<!--<p-confirmDialog></p-confirmDialog>-->
+
+<!--<div class="bg-slate-50 min-h-screen pb-10">-->
+<!--    <div class="mx-auto space-y-6">-->
+
+<!--        &lt;!&ndash; Top Action Header &ndash;&gt;-->
+<!--        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-xl shadow-sm border border-slate-200">-->
+<!--            <div>-->
+<!--                <h1 class="text-2xl font-bold text-slate-800">Product Management</h1>-->
+<!--                <p class="text-sm text-slate-500 mt-1">Browse and manage store inventory</p>-->
+<!--            </div>-->
+
+<!--            @if (authService.currentUser()?.role === 'ADMIN') {-->
+<!--                <p-button-->
+<!--                    label="Add Product"-->
+<!--                    icon="pi pi-plus"-->
+<!--                    severity="primary"-->
+<!--                    (onClick)="openNew()">-->
+<!--                </p-button>-->
+<!--            }-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Data Table &ndash;&gt;-->
+<!--        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden p-4">-->
+<!--            <p-table-->
+<!--                #dt-->
+<!--                [value]="products()"-->
+<!--                [loading]="isLoading()"-->
+<!--                [paginator]="true"-->
+<!--                [rows]="10"-->
+<!--                [rowsPerPageOptions]="[5, 10, 25]"-->
+<!--                [globalFilterFields]="['name', 'description']"-->
+<!--                styleClass="p-datatable-striped"-->
+<!--                [tableStyle]="{ 'min-width': '60rem' }">-->
+
+<!--                <ng-template pTemplate="caption">-->
+<!--                    <div class="flex items-center justify-between pb-2">-->
+<!--                        <span class="text-lg font-semibold text-slate-700">Products</span>-->
+<!--                        <p-iconfield iconPosition="left">-->
+<!--                            <p-inputicon styleClass="pi pi-search"></p-inputicon>-->
+<!--                            <input-->
+<!--                                pInputText-->
+<!--                                type="text"-->
+<!--                                (input)="dt.filterGlobal($any($event.target).value, 'contains')"-->
+<!--                                placeholder="Search products..."-->
+<!--                                class="p-inputtext-sm w-64 rounded-lg" />-->
+<!--                        </p-iconfield>-->
+<!--                    </div>-->
+<!--                </ng-template>-->
+
+<!--                <ng-template pTemplate="header">-->
+<!--                    <tr>-->
+<!--                        <th class="w-12 text-center">No</th>-->
+<!--                        <th pSortableColumn="id" class="w-16">ID <p-sortIcon field="id"></p-sortIcon></th>-->
+<!--                        <th class="w-20">Image</th>-->
+<!--                        <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>-->
+<!--                        <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon></th>-->
+<!--                        <th>Rating</th>-->
+<!--                        <th>Badge</th>-->
+<!--                        <th class="text-center w-36">Actions</th>-->
+<!--                    </tr>-->
+<!--                </ng-template>-->
+
+<!--                <ng-template pTemplate="body" let-prod let-i="rowIndex">-->
+<!--                    <tr>-->
+<!--                        <td class="text-center">{{ i + 1 }}</td>-->
+<!--                        <td class="font-medium text-slate-600">#{{ prod.id }}</td>-->
+<!--                        <td>-->
+<!--                            <div class="relative group w-12 h-12 rounded-lg border border-slate-200 bg-slate-100 overflow-hidden flex items-center justify-center shrink-0 cursor-pointer" (click)="viewDetail(prod.id)">-->
+<!--                                @if (prod.mainImageUrl) {-->
+<!--                                    <img-->
+<!--                                        [src]="getImageUrl(prod.mainImageUrl)"-->
+<!--                                        [alt]="prod.name"-->
+<!--                                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />-->
+<!--                                } @else {-->
+<!--                                    <i class="pi pi-image text-slate-400 text-lg"></i>-->
+<!--                                }-->
+<!--                            </div>-->
+<!--                        </td>-->
+<!--                        <td>-->
+<!--                            <div class="font-semibold text-slate-800 hover:text-blue-600 cursor-pointer" (click)="viewDetail(prod.id)">-->
+<!--                                {{ prod.name }}-->
+<!--                            </div>-->
+<!--                            <div class="text-xs text-slate-400 truncate max-w-xs">{{ prod.description }}</div>-->
+<!--                        </td>-->
+<!--                        <td>-->
+<!--                            <div class="font-bold text-slate-700">${{ prod.price | number:'1.2-2' }}</div>-->
+<!--                            @if (prod.originalPrice) {-->
+<!--                                <div class="text-xs line-through text-slate-400">${{ prod.originalPrice | number:'1.2-2' }}</div>-->
+<!--                            }-->
+<!--                        </td>-->
+<!--                        <td>-->
+<!--                            <div class="flex items-center gap-1 text-xs">-->
+<!--                                <i class="pi pi-star-fill text-amber-500"></i>-->
+<!--                                <span class="font-bold text-slate-700">{{ prod.rating || 0 }}</span>-->
+<!--                                <span class="text-slate-400">({{ prod.reviewCount || 0 }})</span>-->
+<!--                            </div>-->
+<!--                        </td>-->
+<!--                        <td>-->
+<!--                            <p-tag-->
+<!--                                [value]="prod.isOfficialStore ? 'Official Store' : 'Partner'"-->
+<!--                                [severity]="prod.isOfficialStore ? 'info' : 'secondary'">-->
+<!--                            </p-tag>-->
+<!--                        </td>-->
+<!--                        <td class="text-center">-->
+<!--                            <div class="flex items-center justify-center gap-1">-->
+<!--                                <p-button-->
+<!--                                    icon="pi pi-eye"-->
+<!--                                    [rounded]="true"-->
+<!--                                    [text]="true"-->
+<!--                                    severity="secondary"-->
+<!--                                    pTooltip="View Details"-->
+<!--                                    tooltipPosition="top"-->
+<!--                                    (onClick)="viewDetail(prod.id)">-->
+<!--                                </p-button>-->
+
+<!--                                @if (authService.currentUser()?.role === 'ADMIN') {-->
+<!--                                    <p-button-->
+<!--                                        icon="pi pi-pencil"-->
+<!--                                        [rounded]="true"-->
+<!--                                        [text]="true"-->
+<!--                                        severity="info"-->
+<!--                                        pTooltip="Edit Product"-->
+<!--                                        tooltipPosition="top"-->
+<!--                                        (onClick)="editProduct(prod)">-->
+<!--                                    </p-button>-->
+<!--                                    <p-button-->
+<!--                                        icon="pi pi-trash"-->
+<!--                                        [rounded]="true"-->
+<!--                                        [text]="true"-->
+<!--                                        severity="danger"-->
+<!--                                        pTooltip="Delete Product"-->
+<!--                                        tooltipPosition="top"-->
+<!--                                        (onClick)="deleteProduct(prod)">-->
+<!--                                    </p-button>-->
+<!--                                }-->
+<!--                            </div>-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                </ng-template>-->
+
+<!--                <ng-template pTemplate="emptymessage">-->
+<!--                    <tr>-->
+<!--                        <td colspan="8" class="text-center py-8 text-slate-400">-->
+<!--                            No products found.-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                </ng-template>-->
+<!--            </p-table>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Add/Edit Modal Dialog &ndash;&gt;-->
+<!--<p-dialog-->
+<!--    [(visible)]="productDialog"-->
+<!--    [style]="{ width: '700px' }"-->
+<!--    [header]="product.id ? 'Edit Product' : 'Add New Product'"-->
+<!--    [modal]="true"-->
+<!--    styleClass="p-fluid">-->
+
+<!--    <ng-template pTemplate="content">-->
+<!--        <div class="space-y-6 pt-2">-->
+
+<!--            &lt;!&ndash; Basic Details &ndash;&gt;-->
+<!--            <div class="space-y-4">-->
+<!--                <h3 class="text-md font-semibold text-slate-800 border-b pb-2">Basic Information</h3>-->
+
+<!--                <div class="grid grid-cols-2 gap-4">-->
+<!--                    <div>-->
+<!--                        <label for="name" class="block font-medium text-sm text-slate-700 mb-1">Product Name *</label>-->
+<!--                        <input type="text" pInputText id="name" [(ngModel)]="product.name" required />-->
+<!--                    </div>-->
+
+<!--                    <div>-->
+<!--                        <label for="categoryId" class="block font-medium text-sm text-slate-700 mb-1">Category *</label>-->
+<!--                        <p-dropdown-->
+<!--                            id="categoryId"-->
+<!--                            [options]="categories()"-->
+<!--                            [(ngModel)]="product.categoryId"-->
+<!--                            optionLabel="name"-->
+<!--                            optionValue="id"-->
+<!--                            placeholder="Select a Category"-->
+<!--                            [filter]="true"-->
+<!--                            filterBy="name"-->
+<!--                            [showClear]="true"-->
+<!--                            styleClass="w-full">-->
+<!--                        </p-dropdown>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                <div>-->
+<!--                    <label for="description" class="block font-medium text-sm text-slate-700 mb-1">Description</label>-->
+<!--                    <textarea id="description" pInputText [(ngModel)]="product.description" rows="3"></textarea>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Pricing & Rating &ndash;&gt;-->
+<!--            <div class="space-y-4">-->
+<!--                <h3 class="text-md font-semibold text-slate-800 border-b pb-2">Pricing & Rating</h3>-->
+
+<!--                <div class="grid grid-cols-3 gap-4">-->
+<!--                    <div>-->
+<!--                        <label for="price" class="block font-medium text-sm text-slate-700 mb-1">Sale Price ($) *</label>-->
+<!--                        <input type="number" pInputText id="price" [(ngModel)]="product.price" min="0" step="0.01" />-->
+<!--                    </div>-->
+<!--                    <div>-->
+<!--                        <label for="originalPrice" class="block font-medium text-sm text-slate-700 mb-1">Original Price ($)</label>-->
+<!--                        <input type="number" pInputText id="originalPrice" [(ngModel)]="product.originalPrice" min="0" step="0.01" />-->
+<!--                    </div>-->
+<!--                    <div>-->
+<!--                        <label for="discountPercentage" class="block font-medium text-sm text-slate-700 mb-1">Discount (%)</label>-->
+<!--                        <input type="number" pInputText id="discountPercentage" [(ngModel)]="product.discountPercentage" min="0" max="100" />-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                <div class="grid grid-cols-3 gap-4 items-center">-->
+<!--                    <div>-->
+<!--                        <label for="rating" class="block font-medium text-sm text-slate-700 mb-1">Rating (0-5)</label>-->
+<!--                        <input type="number" pInputText id="rating" [(ngModel)]="product.rating" min="0" max="5" step="0.1" />-->
+<!--                    </div>-->
+<!--                    <div>-->
+<!--                        <label for="reviewCount" class="block font-medium text-sm text-slate-700 mb-1">Reviews Count</label>-->
+<!--                        <input type="number" pInputText id="reviewCount" [(ngModel)]="product.reviewCount" min="0" />-->
+<!--                    </div>-->
+<!--                    <div class="flex items-center gap-2 pt-6">-->
+<!--                        <input type="checkbox" id="isOfficialStore" [(ngModel)]="product.isOfficialStore" class="w-4 h-4 text-blue-600 rounded" />-->
+<!--                        <label for="isOfficialStore" class="font-medium text-sm text-slate-700">Official Store</label>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Media Uploads &ndash;&gt;-->
+<!--            <div class="space-y-4">-->
+<!--                <h3 class="text-md font-semibold text-slate-800 border-b pb-2">Media Files</h3>-->
+
+<!--                <div>-->
+<!--                    <label class="block font-medium text-sm text-slate-700 mb-2">Main Image</label>-->
+<!--                    <div class="flex gap-4 items-center p-3 rounded-xl bg-slate-50 border border-slate-200">-->
+<!--                        <div class="w-20 h-20 shrink-0 rounded-lg border border-slate-200 overflow-hidden bg-white flex items-center justify-center">-->
+<!--                            @if (mainImagePreview) {-->
+<!--                                <img [src]="mainImagePreview" alt="Main Preview" class="w-full h-full object-cover" />-->
+<!--                            } @else if (product.mainImageUrl) {-->
+<!--                                <img [src]="getImageUrl(product.mainImageUrl)" alt="Main Cover" class="w-full h-full object-cover" />-->
+<!--                            } @else {-->
+<!--                                <i class="pi pi-image text-2xl text-slate-400"></i>-->
+<!--                            }-->
+<!--                        </div>-->
+<!--                        <div>-->
+<!--                            <input type="file" #mainFileInput (change)="onMainFileSelected($event)" accept="image/*" class="hidden" />-->
+<!--                            <p-button label="Choose Main Image" icon="pi pi-upload" severity="secondary" [outlined]="true" size="small" (onClick)="mainFileInput.click()"></p-button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                <div>-->
+<!--                    <label class="block font-medium text-sm text-slate-700 mb-2">Gallery Images</label>-->
+<!--                    <input type="file" #galleryFileInput (change)="onGalleryFilesSelected($event)" accept="image/*" multiple class="hidden" />-->
+<!--                    <p-button label="Select Gallery Images" icon="pi pi-images" severity="secondary" [outlined]="true" size="small" (onClick)="galleryFileInput.click()"></p-button>-->
+
+<!--                    <div class="flex flex-wrap gap-2 mt-2">-->
+<!--                        @for (preview of galleryPreviews; track $index) {-->
+<!--                            <img [src]="preview" class="w-16 h-16 object-cover rounded-lg border border-slate-200" />-->
+<!--                        }-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Dynamic Variants &ndash;&gt;-->
+<!--            <div class="space-y-4">-->
+<!--                <div class="flex justify-between items-center border-b pb-2">-->
+<!--                    <h3 class="text-md font-semibold text-slate-800">Variants</h3>-->
+<!--                    <p-button label="Add Variant" icon="pi pi-plus" size="small" [text]="true" (onClick)="addVariant()"></p-button>-->
+<!--                </div>-->
+
+<!--                @for (variant of variants; track $index) {-->
+<!--                    <div class="grid grid-cols-5 gap-2 items-center bg-slate-50 p-2 rounded-lg border border-slate-200">-->
+<!--                        <input type="text" pInputText placeholder="Color" [(ngModel)]="variant.color" class="p-inputtext-sm" />-->
+<!--                        <input type="text" pInputText placeholder="Hex (#5A5B60)" [(ngModel)]="variant.colorHex" class="p-inputtext-sm" />-->
+<!--                        <input type="text" pInputText placeholder="Storage (256GB)" [(ngModel)]="variant.storage" class="p-inputtext-sm" />-->
+<!--                        <input type="number" pInputText placeholder="+Price (+$120)" [(ngModel)]="variant.priceAdjustment" class="p-inputtext-sm" />-->
+<!--                        <div class="flex gap-1 items-center">-->
+<!--                            <input type="number" pInputText placeholder="Stock" [(ngModel)]="variant.stockQuantity" class="p-inputtext-sm w-20" />-->
+<!--                            <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="removeVariant($index)"></p-button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                }-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Key Features &ndash;&gt;-->
+<!--            <div class="space-y-4">-->
+<!--                <div class="flex justify-between items-center border-b pb-2">-->
+<!--                    <h3 class="text-md font-semibold text-slate-800">Key Features</h3>-->
+<!--                    <p-button label="Add Feature" icon="pi pi-plus" size="small" [text]="true" (onClick)="addFeature()"></p-button>-->
+<!--                </div>-->
+
+<!--                @for (feature of features; track $index) {-->
+<!--                    <div class="flex gap-2 items-center bg-slate-50 p-2 rounded-lg border border-slate-200">-->
+<!--                        <input type="text" pInputText placeholder="Key (e.g., Display)" [(ngModel)]="feature.featureKey" class="p-inputtext-sm flex-1" />-->
+<!--                        <input type="text" pInputText placeholder="Value (6.8 AMOLED)" [(ngModel)]="feature.featureValue" class="p-inputtext-sm flex-1" />-->
+<!--                        <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="removeFeature($index)"></p-button>-->
+<!--                    </div>-->
+<!--                }-->
+<!--            </div>-->
+
+<!--        </div>-->
+<!--    </ng-template>-->
+
+<!--    <ng-template pTemplate="footer">-->
+<!--        <p-button label="Cancel" icon="pi pi-times" [text]="true" (onClick)="hideDialog()"></p-button>-->
+<!--        <p-button label="Save" icon="pi pi-check" severity="primary" (onClick)="saveProduct()"></p-button>-->
+<!--    </ng-template>-->
+<!--</p-dialog>-->
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<div class="bg-slate-50 min-h-screen">
+<div class="bg-slate-50 min-h-screen pb-10">
     <div class="mx-auto space-y-6">
 
         <!-- Top Action Header -->
@@ -21,7 +335,7 @@
             }
         </div>
 
-        <!-- PrimeNG Data Table -->
+        <!-- Data Table -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden p-4">
             <p-table
                 #dt
@@ -32,7 +346,7 @@
                 [rowsPerPageOptions]="[5, 10, 25]"
                 [globalFilterFields]="['name', 'description']"
                 styleClass="p-datatable-striped"
-                [tableStyle]="{ 'min-width': '50rem' }">
+                [tableStyle]="{ 'min-width': '60rem' }">
 
                 <ng-template pTemplate="caption">
                     <div class="flex items-center justify-between pb-2">
@@ -56,10 +370,9 @@
                         <th class="w-20">Image</th>
                         <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
                         <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon></th>
-                        <th>Status</th>
-                        @if (authService.currentUser()?.role === 'ADMIN') {
-                            <th class="text-center w-32">Actions</th>
-                        }
+                        <th>Rating</th>
+                        <th>Badge</th>
+                        <th class="text-center w-36">Actions</th>
                     </tr>
                 </ng-template>
 
@@ -68,35 +381,55 @@
                         <td class="text-center">{{ i + 1 }}</td>
                         <td class="font-medium text-slate-600">#{{ prod.id }}</td>
                         <td>
-                            <div class="relative group w-12 h-12 rounded-lg border border-slate-200 bg-slate-100 overflow-hidden shadow-xs flex items-center justify-center shrink-0">
-                                @if (prod.imageUrl) {
+                            <div class="relative group w-12 h-12 rounded-lg border border-slate-200 bg-slate-100 overflow-hidden flex items-center justify-center shrink-0 cursor-pointer" (click)="viewDetail(prod.id)">
+                                @if (prod.mainImageUrl) {
                                     <img
-                                        [src]="getImageUrl(prod.imageUrl)"
+                                        [src]="getImageUrl(prod.mainImageUrl)"
                                         [alt]="prod.name"
-                                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                        (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling.style.display='flex'" />
-                                    <div class="hidden absolute inset-0 items-center justify-center bg-slate-100 text-slate-400">
-                                        <i class="pi pi-image text-lg"></i>
-                                    </div>
+                                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                                 } @else {
                                     <i class="pi pi-image text-slate-400 text-lg"></i>
                                 }
                             </div>
                         </td>
                         <td>
-                            <div class="font-semibold text-slate-800">{{ prod.name }}</div>
+                            <div class="font-semibold text-slate-800 hover:text-blue-600 cursor-pointer" (click)="viewDetail(prod.id)">
+                                {{ prod.name }}
+                            </div>
                             <div class="text-xs text-slate-400 truncate max-w-xs">{{ prod.description }}</div>
                         </td>
-                        <td class="font-bold text-slate-700">${{ prod.price | number:'1.2-2' }}</td>
+                        <td>
+                            <div class="font-bold text-slate-700">${{ prod.price | number:'1.2-2' }}</div>
+                            @if (prod.originalPrice) {
+                                <div class="text-xs line-through text-slate-400">${{ prod.originalPrice | number:'1.2-2' }}</div>
+                            }
+                        </td>
+                        <td>
+                            <div class="flex items-center gap-1 text-xs">
+                                <i class="pi pi-star-fill text-amber-500"></i>
+                                <span class="font-bold text-slate-700">{{ prod.rating || 0 }}</span>
+                                <span class="text-slate-400">({{ prod.reviewCount || 0 }})</span>
+                            </div>
+                        </td>
                         <td>
                             <p-tag
-                                [value]="prod.stockQuantity > 0 ? 'OUT OF STOCK' : 'IN STOCK'"
-                                [severity]="getSeverity(prod.stockQuantity)">
+                                [value]="prod.isOfficialStore ? 'Official Store' : 'Partner'"
+                                [severity]="prod.isOfficialStore ? 'info' : 'secondary'">
                             </p-tag>
                         </td>
-                        @if (authService.currentUser()?.role === 'ADMIN') {
-                            <td class="text-center">
-                                <div class="flex items-center justify-center gap-1">
+                        <td class="text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <p-button
+                                    icon="pi pi-eye"
+                                    [rounded]="true"
+                                    [text]="true"
+                                    severity="secondary"
+                                    pTooltip="View Details"
+                                    tooltipPosition="top"
+                                    (onClick)="viewDetail(prod.id)">
+                                </p-button>
+
+                                @if (authService.currentUser()?.role === 'ADMIN') {
                                     <p-button
                                         icon="pi pi-pencil"
                                         [rounded]="true"
@@ -115,15 +448,15 @@
                                         tooltipPosition="top"
                                         (onClick)="deleteProduct(prod)">
                                     </p-button>
-                                </div>
-                            </td>
-                        }
+                                }
+                            </div>
+                        </td>
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td [attr.colspan]="authService.currentUser()?.role === 'ADMIN' ? 7 : 6" class="text-center py-8 text-slate-400">
+                        <td colspan="8" class="text-center py-8 text-slate-400">
                             No products found.
                         </td>
                     </tr>
@@ -132,94 +465,3 @@
         </div>
     </div>
 </div>
-
-<!-- Create / Edit Product Dialog -->
-<p-dialog
-    [(visible)]="productDialog"
-    [style]="{ width: '480px' }"
-    [header]="product.id ? 'Edit Product' : 'Add New Product'"
-    [modal]="true"
-    styleClass="p-fluid">
-
-    <ng-template pTemplate="content">
-        <div class="space-y-4 pt-2">
-
-            <div>
-                <label class="block font-medium text-sm text-slate-700 mb-2">Product Image</label>
-
-                <div class="flex gap-4 items-center p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <div class="relative group w-20 h-20 shrink-0 rounded-lg border border-slate-200 overflow-hidden bg-white shadow-xs flex items-center justify-center">
-                        @if (imagePreview) {
-                            <img [src]="imagePreview" alt="Selected Preview" class="w-full h-full object-cover" />
-                        } @else if (product.imageUrl) {
-                            <img [src]="getImageUrl(product.imageUrl)" alt="Product Image" class="w-full h-full object-cover" />
-                        } @else {
-                            <div class="flex flex-col items-center justify-center text-slate-400 gap-1">
-                                <i class="pi pi-image text-2xl"></i>
-                                <span class="text-[10px] font-medium text-slate-400">No Image</span>
-                            </div>
-                        }
-                    </div>
-
-                    <div class="space-y-1.5">
-                        <input
-                            type="file"
-                            #fileInput
-                            (change)="onFileSelected($event)"
-                            accept="image/*"
-                            class="hidden" />
-
-                        <p-button
-                            [label]="imagePreview || product.imageUrl ? 'Change Image' : 'Choose Image File'"
-                            icon="pi pi-upload"
-                            severity="secondary"
-                            [outlined]="true"
-                            size="small"
-                            (onClick)="fileInput.click()">
-                        </p-button>
-
-                        <p class="text-xs text-slate-400">PNG, JPG, or WEBP (Max 5MB)</p>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <label for="name" class="block font-medium text-sm text-slate-700 mb-1">Product Name *</label>
-                <input type="text" pInputText id="name" [(ngModel)]="product.name" required autofocus style="width: 100%;" />
-            </div>
-
-            <div>
-                <label for="description" class="block font-medium text-sm text-slate-700 mb-1">Description</label>
-                <textarea id="description" pInputText [(ngModel)]="product.description" rows="3" style="width: 100%;"></textarea>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="price" class="block font-medium text-sm text-slate-700 mb-1">Price ($) *</label>
-                    <input type="number" pInputText id="price" [(ngModel)]="product.price" min="0" step="0.01"  style="width: 100%;"/>
-                </div>
-            </div>
-
-            <div>
-                <label for="categoryId" class="block font-medium text-sm text-slate-700 mb-1.5">Category *</label>
-                <p-dropdown
-                    id="categoryId"
-                    [options]="categories()"
-                    [(ngModel)]="product.categoryId"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Select a Category"
-                    [filter]="true"
-                    filterBy="name"
-                    [showClear]="true"
-                    styleClass="w-full">
-                </p-dropdown>
-            </div>
-        </div>
-    </ng-template>
-
-    <ng-template pTemplate="footer">
-        <p-button label="Cancel" icon="pi pi-times" [text]="true" (onClick)="hideDialog()"></p-button>
-        <p-button label="Save" icon="pi pi-check" severity="primary" (onClick)="saveProduct()"></p-button>
-    </ng-template>
-</p-dialog>
